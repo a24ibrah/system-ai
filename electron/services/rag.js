@@ -11,9 +11,11 @@ function getFolder() {
   return ragFolderPath;
 }
 
+// Use the internal lib path to avoid pdf-parse's test-runner that fails in Electron
+const pdfParse = require('pdf-parse/lib/pdf-parse.js');
+
 async function extractPdfText(filePath) {
   try {
-    const pdfParse = require('pdf-parse');
     const buffer = fs.readFileSync(filePath);
     const data = await pdfParse(buffer);
     return data.text || '';
@@ -27,8 +29,13 @@ async function extractPdfText(filePath) {
  * Read all PDFs from the configured folder and return a context string
  * ready to be appended to the system prompt.
  */
+// Max characters of PDF content to inject — keeps context within small model limits
+const MAX_CONTEXT_CHARS = 6000;
+
 async function buildContext() {
   if (!ragFolderPath) return '';
+
+  console.log('[RAG] Building context from folder:', ragFolderPath);
 
   let files;
   try {
@@ -39,19 +46,28 @@ async function buildContext() {
   }
 
   const pdfFiles = files.filter((f) => f.toLowerCase().endsWith('.pdf'));
+  console.log(`[RAG] Found ${pdfFiles.length} PDF(s):`, pdfFiles);
   if (pdfFiles.length === 0) return '';
 
   const sections = [];
+  let totalChars = 0;
+
   for (const file of pdfFiles) {
+    if (totalChars >= MAX_CONTEXT_CHARS) break;
     const filePath = path.join(ragFolderPath, file);
     const text = await extractPdfText(filePath);
     if (text && text.trim()) {
-      sections.push(`### ${file}\n${text.trim()}`);
+      const remaining = MAX_CONTEXT_CHARS - totalChars;
+      const chunk = text.trim().slice(0, remaining);
+      sections.push(`### ${file}\n${chunk}`);
+      totalChars += chunk.length;
+      console.log(`[RAG] Added "${file}" (${chunk.length} chars)`);
     }
   }
 
   if (sections.length === 0) return '';
 
+  console.log(`[RAG] Total context injected: ${totalChars} chars`);
   return (
     `\n\n## Knowledge Base (your documents — use this to answer questions):\n` +
     sections.join('\n\n---\n\n')
