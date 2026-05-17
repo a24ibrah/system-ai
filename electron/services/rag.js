@@ -11,8 +11,8 @@ function getFolder() {
   return ragFolderPath;
 }
 
-// Use the internal lib path to avoid pdf-parse's test-runner that fails in Electron
-const pdfParse = require('pdf-parse/lib/pdf-parse.js');
+// pdf-parse v2.x — use the standard require
+const pdfParse = require('pdf-parse');
 
 async function extractPdfText(filePath) {
   try {
