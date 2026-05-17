@@ -6,6 +6,7 @@ const { ConversationManager } = require('./services/conversation');
 const { generateSpeech, startServer: startTtsServer, shutdown: shutdownTts } = require('./services/tts');
 const { transcribe, startServer: startSttServer, shutdown: shutdownStt } = require('./services/stt');
 const fileops = require('./services/fileops');
+const rag = require('./services/rag');
 
 let mainWindow = null;
 let tray = null;
@@ -184,18 +185,47 @@ ipcMain.handle('ollama:status', async () => {
   return llm.checkOllamaStatus();
 });
 
+// RAG — folder management
+ipcMain.handle('rag:selectFolder', async () => {
+  const { dialog } = require('electron');
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openDirectory'],
+    title: 'Select Knowledge Base Folder',
+  });
+  if (result.canceled || !result.filePaths.length) return { canceled: true };
+  const folderPath = result.filePaths[0];
+  rag.setFolder(folderPath);
+  return { folderPath };
+});
+
+ipcMain.handle('rag:getFolder', () => rag.getFolder());
+
+ipcMain.handle('rag:setFolder', (_event, folderPath) => {
+  rag.setFolder(folderPath || null);
+  return { ok: true };
+});
+
+ipcMain.handle('rag:clearFolder', () => {
+  rag.setFolder(null);
+  return { ok: true };
+});
+
 // Chat — routes through active LLM provider
 ipcMain.handle('ollama:chat', async (event, { model, message, voiceEnabled, voice, ttsEngine, voiceRate, voicePitch }) => {
   conversation.addUserMessage(message);
 
   let fullResponse = '';
 
+  // Inject PDF knowledge base context into the system prompt
+  const ragContext = await rag.buildContext();
+  const systemWithRag = conversation.systemPrompt + ragContext;
+
   try {
     fullResponse = await llm.chatStream(
       {
         model: model || undefined,
         messages: conversation.getMessages(),
-        system: conversation.systemPrompt,
+        system: systemWithRag,
       },
       (delta) => {
         event.sender.send('ollama:stream', { content: delta, done: false });

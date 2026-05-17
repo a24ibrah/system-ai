@@ -68,6 +68,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   keystoreSet: (opts) => ipcRenderer.invoke('keystore:set', opts),
   keystoreGetAll: () => ipcRenderer.invoke('keystore:getAll'),
 
+  // RAG — knowledge base folder
+  ragSelectFolder: () => ipcRenderer.invoke('rag:selectFolder'),
+  ragGetFolder: () => ipcRenderer.invoke('rag:getFolder'),
+  ragSetFolder: (folderPath) => ipcRenderer.invoke('rag:setFolder', folderPath),
+  ragClearFolder: () => ipcRenderer.invoke('rag:clearFolder'),
+
   // Generic IPC
   send: (channel, data) => ipcRenderer.send(channel, data),
   on: (channel, callback) => {
