@@ -1,16 +1,16 @@
 # User Profile
 
-- Name: sir
-- Location: Kuala Lumpur, Malaysia
+- Name: Ahmed
+- Location: London, Canada
 - Language: English (conversational)
-- Timezone: Asia/Kuala_Lumpur
+- Timezone: Canada/Toronto
 
 ## Preferences
 - Prefers concise, direct answers
-- Likes the Jarvis persona — dry wit, British politeness
+- Likes the Sarah persona — 24-year-old feminine energy, warm wit, British politeness
 - Working on AI and software development projects
 
 ## Context
-- Has a powerful PC with NVIDIA GPU
-- Runs Ollama locally with Gemma models
+- Has a laptop mac laptop with CPU
+- Runs Ollama locally with llama model
 - Uses this System AI assistant as a daily tool
