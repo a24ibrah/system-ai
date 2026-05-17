@@ -20,6 +20,8 @@ interface AppSettings {
   // Multi-provider
   activeProvider: ProviderId;
   activeModel: string;
+  // RAG knowledge base folder
+  ragFolder: string;
   // Legacy (kept for compat)
   apiProvider: 'ollama' | 'openai';
   apiKey: string;
