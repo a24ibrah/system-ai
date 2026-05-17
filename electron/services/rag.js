@@ -1,21 +1,47 @@
 const fs = require('fs');
 const path = require('path');
+const { app } = require('electron');
 
-let ragFolderPath = null;
+// Persist folder path in userData so it survives app restarts without
+// relying on the renderer sending it back via IPC.
+function getConfigPath() {
+  return path.join(app.getPath('userData'), 'rag-config.json');
+}
+
+function loadPersistedFolder() {
+  try {
+    const raw = fs.readFileSync(getConfigPath(), 'utf-8');
+    return JSON.parse(raw).folder || null;
+  } catch {
+    return null;
+  }
+}
+
+function persistFolder(folderPath) {
+  try {
+    fs.writeFileSync(getConfigPath(), JSON.stringify({ folder: folderPath || null }), 'utf-8');
+  } catch (err) {
+    console.warn('[RAG] Could not persist folder config:', err.message);
+  }
+}
+
+// Load on startup
+let ragFolderPath = loadPersistedFolder();
+if (ragFolderPath) console.log('[RAG] Restored folder from config:', ragFolderPath);
 
 function setFolder(folderPath) {
   ragFolderPath = folderPath || null;
+  persistFolder(ragFolderPath);
 }
 
 function getFolder() {
   return ragFolderPath;
 }
 
-// pdf-parse v2.x — use the standard require
-const pdfParse = require('pdf-parse');
-
 async function extractPdfText(filePath) {
   try {
+    // Lazy require to avoid top-level side effects in Electron
+    const pdfParse = require('pdf-parse');
     const buffer = fs.readFileSync(filePath);
     const data = await pdfParse(buffer);
     return data.text || '';
