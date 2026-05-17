@@ -394,6 +394,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   ollamaEndpoint: 'http://localhost:11434',
   activeProvider: 'ollama',
   activeModel: '',
+  ragFolder: '',
   apiProvider: 'ollama',
   apiKey: '',
   apiModel: '',
