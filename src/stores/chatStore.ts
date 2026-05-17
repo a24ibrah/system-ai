@@ -589,6 +589,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
           model: newSettings.activeModel || undefined,
         });
       }
+      // Sync RAG folder change to main process
+      if ('ragFolder' in patch) {
+        api?.ragSetFolder(newSettings.ragFolder || null);
+      }
 
       return { settings: newSettings };
     });
