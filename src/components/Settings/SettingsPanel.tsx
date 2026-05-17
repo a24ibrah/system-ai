@@ -295,6 +295,49 @@ export default function SettingsPanel() {
               </div>
             </div>
 
+            {/* ── Knowledge Base ──────────────────────── */}
+            <div className="settings-section">
+              <div className="settings-section-title">KNOWLEDGE BASE</div>
+              <div className="settings-row">
+                <label>PDF Folder</label>
+                <div className="settings-key-row">
+                  <input
+                    type="text"
+                    className="settings-input"
+                    readOnly
+                    value={settings.ragFolder || ''}
+                    placeholder="No folder selected"
+                    title={settings.ragFolder || ''}
+                  />
+                  <button
+                    className="settings-key-btn"
+                    onClick={async () => {
+                      const result = await api?.ragSelectFolder?.();
+                      if (result && !result.canceled) {
+                        updateSettings({ ragFolder: result.folderPath });
+                      }
+                    }}
+                  >
+                    Browse
+                  </button>
+                  {settings.ragFolder && (
+                    <button
+                      className="settings-key-btn"
+                      onClick={() => updateSettings({ ragFolder: '' })}
+                      title="Remove folder"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
+              {settings.ragFolder && (
+                <div className="settings-hint">
+                  PDFs in this folder are included as context with every message.
+                </div>
+              )}
+            </div>
+
           </div>
 
           <div className="settings-footer">

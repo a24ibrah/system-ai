@@ -46,6 +46,11 @@ export default function HUDLayout() {
 
   useEffect(() => {
     checkOllamaStatus();
+    // Restore saved RAG folder to main process
+    const api = (window as any).electronAPI;
+    if (settings.ragFolder && api?.ragSetFolder) {
+      api.ragSetFolder(settings.ragFolder);
+    }
   }, [checkOllamaStatus]);
 
   return (
